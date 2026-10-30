@@ -27,7 +27,10 @@ POCKETS = {
     "battle": (0xE2C, 30),
 }
 
+ITEM_RARE_CANDY = 50
+VITAMINS = {"HP Up": 45, "Protein": 46, "Iron": 47, "Carbos": 48, "Calcium": 49, "Zinc": 52}
 ITEM_SPELL_TAG = 247
+ITEM_GOLD_BOTTLE_CAP = 617
 ITEM_ABILITY_PATCH = 625
 MINTS = {
     "Lonely": 771, "Adamant": 772, "Naughty": 773, "Brave": 774, "Bold": 775,
@@ -41,6 +44,9 @@ MINTS = {
 # Ability Patch plus the 15 most useful Mints.
 WANTED = [
     ("items", ITEM_SPELL_TAG, 99),
+    ("items", ITEM_GOLD_BOTTLE_CAP, 999),
+    ("medicine", ITEM_RARE_CANDY, 999),
+] + [("medicine", item, 999) for item in VITAMINS.values()] + [
     ("medicine", ITEM_ABILITY_PATCH, 99),
 ] + [("medicine", MINTS[n], 99) for n in (
     "Adamant", "Jolly", "Modest", "Timid", "Bold", "Impish", "Calm", "Careful",
