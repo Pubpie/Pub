@@ -40,18 +40,18 @@ MINTS = {
     "Serious": 791,
 }
 
-# The medicine pocket only has 16 free slots in this save, so pick the
-# Ability Patch plus the 15 most useful Mints.
+# The medicine pocket is too small for everything, so drop these cheap
+# single-count items (Ice Heal, Fresh Water, Energy Powder, Energy Root,
+# Heal Powder, Revival Herb) to make room for all the Mints.
+REMOVE = [("medicine", item) for item in (20, 30, 34, 35, 36, 37)]
+
 WANTED = [
     ("items", ITEM_SPELL_TAG, 99),
     ("items", ITEM_GOLD_BOTTLE_CAP, 999),
     ("medicine", ITEM_RARE_CANDY, 999),
 ] + [("medicine", item, 999) for item in VITAMINS.values()] + [
     ("medicine", ITEM_ABILITY_PATCH, 99),
-] + [("medicine", MINTS[n], 99) for n in (
-    "Adamant", "Jolly", "Modest", "Timid", "Bold", "Impish", "Calm", "Careful",
-    "Brave", "Quiet", "Relaxed", "Sassy", "Hasty", "Naive", "Naughty",
-)]
+] + [("medicine", item, 99) for item in MINTS.values()]
 
 
 def crc16_ccitt(data):
@@ -69,6 +69,18 @@ def block_info(sav, base):
     crc = struct.unpack_from("<H", sav, footer + 0xE)[0]
     valid = size == GENERAL_SIZE and crc == crc16_ccitt(sav[base:footer])
     return count, valid
+
+
+def remove_item(sav, base, pocket, item):
+    off, slots = POCKETS[pocket]
+    kept = []
+    for i in range(slots):
+        slot = struct.unpack_from("<HH", sav, base + off + 4 * i)
+        if slot[0] and slot[0] != item:
+            kept.append(slot)
+    # Pockets are stored packed, with no gaps between used slots.
+    for i in range(slots):
+        struct.pack_into("<HH", sav, base + off + 4 * i, *(kept[i] if i < len(kept) else (0, 0)))
 
 
 def add_item(sav, base, pocket, item, count):
@@ -95,6 +107,8 @@ def main(src, dst):
         raise SystemExit("no valid general block found")
     _, base = max(valid)
 
+    for pocket, item in REMOVE:
+        remove_item(sav, base, pocket, item)
     for pocket, item, count in WANTED:
         add_item(sav, base, pocket, item, count)
 
