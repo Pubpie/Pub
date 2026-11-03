@@ -7,7 +7,12 @@ holds progress made after the last in-game save. This copies that live data
 state, writes it to the older of the two save partitions with a higher save
 count, and fixes the checksums, the same way an in-game save would.
 
-Usage: melonds_state_to_sav.py STATE.ml1 OUT.sav
+With --pokemon-only, the story data (event flags, location, map objects)
+stays from the last in-game save, and only the party, PC boxes, bag, money,
+play time and Pokedex come from the live data. Use it when a state was
+taken in the middle of an event and the full copy gives a black screen.
+
+Usage: melonds_state_to_sav.py [--pokemon-only] STATE.ml1 OUT.sav
 """
 import struct
 import sys
@@ -23,6 +28,14 @@ STORAGE_SIZE = 0x18408
 # on an in-game save, so mixing a live location with stale map objects gives
 # a black screen. Keep the location from the last in-game save instead.
 LOCAL_FIELD_DATA = slice(0x1320, 0x13A8)
+# General block ranges taken from the live data with --pokemon-only.
+POKEMON_ONLY_RANGES = (
+    slice(0x78, 0x7C),    # money
+    slice(0x86, 0x8A),    # play time
+    slice(0x94, 0x620),   # party
+    slice(0x644, 0xEA4),  # bag
+    slice(0x13A8, 0x1680),  # Pokedex
+)
 TRAINER = slice(0x64, 0x78)  # trainer name + IDs, used to find the live block
 PLAY_TIME = 0x86
 
@@ -32,7 +45,7 @@ def play_time(buf, off):
     return h * 3600 + m * 60 + s
 
 
-def main(src, dst):
+def main(src, dst, pokemon_only=False):
     state = open(src, "rb").read()
     secs = {tag: (off, length) for tag, off, length in sections(state)}
 
@@ -64,7 +77,12 @@ def main(src, dst):
     for block_start, size in ((0, GENERAL_SIZE), (STORAGE_START, STORAGE_SIZE)):
         data_len = size - FOOTER_SIZE
         dst_off = older_base + block_start
-        sav[dst_off:dst_off + data_len] = ram[live + block_start:live + block_start + data_len]
+        if block_start == 0 and pokemon_only:
+            sav[dst_off:dst_off + data_len] = sav[newest_base:newest_base + data_len]
+            for r in POKEMON_ONLY_RANGES:
+                sav[dst_off + r.start:dst_off + r.stop] = ram[live + r.start:live + r.stop]
+        else:
+            sav[dst_off:dst_off + data_len] = ram[live + block_start:live + block_start + data_len]
         if block_start == 0:
             sav[dst_off + LOCAL_FIELD_DATA.start:dst_off + LOCAL_FIELD_DATA.stop] = \
                 sav[newest_base + LOCAL_FIELD_DATA.start:newest_base + LOCAL_FIELD_DATA.stop]
@@ -81,4 +99,7 @@ def main(src, dst):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:3])
+    args = sys.argv[1:]
+    pokemon_only = "--pokemon-only" in args
+    args = [a for a in args if a != "--pokemon-only"]
+    main(*args[:2], pokemon_only=pokemon_only)

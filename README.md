@@ -34,3 +34,9 @@ The savestate's RAM holds about 11 more hours of play than its in-game save (43:
   in-game save (map 306), because the live location (map 325) did not match the saved map
   objects and gave a black screen
 - `tools/melonds_state_to_sav.py STATE.ml1 OUT.sav` – builds a .sav from a savestate's live memory
+
+Because that full copy still gave a black screen (the state was taken mid-event):
+
+- `save/Origin_HeartGold_43h47m_pokemon_only.sav` – story data (event flags, location, map
+  objects) from the 32:57 in-game save; party, 123 PC Pokémon, bag, money, play time and Pokédex
+  from 43:47 (`tools/melonds_state_to_sav.py --pokemon-only`)
