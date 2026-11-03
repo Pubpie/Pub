@@ -12,7 +12,10 @@ stays from the last in-game save, and only the party, PC boxes, bag, money,
 play time and Pokedex come from the live data. Use it when a state was
 taken in the middle of an event and the full copy gives a black screen.
 
-Usage: melonds_state_to_sav.py [--pokemon-only] STATE.ml1 OUT.sav
+--with-story also brings the live event vars and flags (story progress),
+while still keeping the location and map data from the in-game save.
+
+Usage: melonds_state_to_sav.py [--pokemon-only | --with-story] STATE.ml1 OUT.sav
 """
 import struct
 import sys
@@ -36,6 +39,7 @@ POKEMON_ONLY_RANGES = (
     slice(0x644, 0xEA4),  # bag
     slice(0x13A8, 0x1680),  # Pokedex
 )
+STORY_RANGES = (slice(0xEA4, 0x1320),)  # event vars and flags, with --with-story
 TRAINER = slice(0x64, 0x78)  # trainer name + IDs, used to find the live block
 PLAY_TIME = 0x86
 
@@ -45,7 +49,7 @@ def play_time(buf, off):
     return h * 3600 + m * 60 + s
 
 
-def main(src, dst, pokemon_only=False):
+def main(src, dst, pokemon_only=False, with_story=False):
     state = open(src, "rb").read()
     secs = {tag: (off, length) for tag, off, length in sections(state)}
 
@@ -79,7 +83,7 @@ def main(src, dst, pokemon_only=False):
         dst_off = older_base + block_start
         if block_start == 0 and pokemon_only:
             sav[dst_off:dst_off + data_len] = sav[newest_base:newest_base + data_len]
-            for r in POKEMON_ONLY_RANGES:
+            for r in POKEMON_ONLY_RANGES + (STORY_RANGES if with_story else ()):
                 sav[dst_off + r.start:dst_off + r.stop] = ram[live + r.start:live + r.stop]
         else:
             sav[dst_off:dst_off + data_len] = ram[live + block_start:live + block_start + data_len]
@@ -100,6 +104,7 @@ def main(src, dst, pokemon_only=False):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    pokemon_only = "--pokemon-only" in args
-    args = [a for a in args if a != "--pokemon-only"]
-    main(*args[:2], pokemon_only=pokemon_only)
+    with_story = "--with-story" in args
+    pokemon_only = "--pokemon-only" in args or with_story
+    args = [a for a in args if not a.startswith("--")]
+    main(*args[:2], pokemon_only=pokemon_only, with_story=with_story)

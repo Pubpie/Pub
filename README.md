@@ -40,3 +40,6 @@ Because that full copy still gave a black screen (the state was taken mid-event)
 - `save/Origin_HeartGold_43h47m_pokemon_only.sav` – story data (event flags, location, map
   objects) from the 32:57 in-game save; party, 123 PC Pokémon, bag, money, play time and Pokédex
   from 43:47 (`tools/melonds_state_to_sav.py --pokemon-only`)
+- `save/Origin_HeartGold_43h47m_story.sav` – the pokemon-only save plus the 43:47 event vars and
+  flags (story progress); location and map data stay from the in-game save
+  (`tools/melonds_state_to_sav.py --with-story`)
