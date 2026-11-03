@@ -42,4 +42,6 @@ Because that full copy still gave a black screen (the state was taken mid-event)
   from 43:47 (`tools/melonds_state_to_sav.py --pokemon-only`)
 - `save/Origin_HeartGold_43h47m_story.sav` – the pokemon-only save plus the 43:47 event vars and
   flags (story progress); location and map data stay from the in-game save
-  (`tools/melonds_state_to_sav.py --with-story`)
+  (`tools/melonds_state_to_sav.py --with-story`). System flag 0x966 is kept from the in-game
+  save: the statue event clears it temporarily, and a save with it cleared gives a black screen
+  (found by testing 7 saves that each carried a different set of the 109 changed values)

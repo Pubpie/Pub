@@ -40,6 +40,10 @@ POKEMON_ONLY_RANGES = (
     slice(0x13A8, 0x1680),  # Pokedex
 )
 STORY_RANGES = (slice(0xEA4, 0x1320),)  # event vars and flags, with --with-story
+FLAGS_START = 0x118C
+# System flag 0x966 is cleared while the statue event runs; loading a save
+# with it cleared gives a black screen, so keep its value from the in-game save.
+KEEP_SAVED_FLAGS = (0x966,)
 TRAINER = slice(0x64, 0x78)  # trainer name + IDs, used to find the live block
 PLAY_TIME = 0x86
 
@@ -85,6 +89,11 @@ def main(src, dst, pokemon_only=False, with_story=False):
             sav[dst_off:dst_off + data_len] = sav[newest_base:newest_base + data_len]
             for r in POKEMON_ONLY_RANGES + (STORY_RANGES if with_story else ()):
                 sav[dst_off + r.start:dst_off + r.stop] = ram[live + r.start:live + r.stop]
+            if with_story:
+                for flag in KEEP_SAVED_FLAGS:
+                    pos, bit = FLAGS_START + flag // 8, 1 << (flag % 8)
+                    saved = sav[newest_base + pos] & bit
+                    sav[dst_off + pos] = (sav[dst_off + pos] & ~bit) | saved
         else:
             sav[dst_off:dst_off + data_len] = ram[live + block_start:live + block_start + data_len]
         if block_start == 0:
