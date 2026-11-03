@@ -40,10 +40,14 @@ MINTS = {
     "Serious": 791,
 }
 
-# The medicine pocket is too small for everything, so drop these cheap
-# single-count items (Ice Heal, Fresh Water, Energy Powder, Energy Root,
-# Heal Powder, Revival Herb) to make room for all the Mints.
-REMOVE = [("medicine", item) for item in (20, 30, 34, 35, 36, 37)]
+# Mints only exist in hg-engine builds from December 2023 on; the build this
+# hack uses froze when they were in the bag, so they are not added.
+# Set ADD_MINTS = True only for a build that is known to have them. The
+# medicine pocket is then too small, so these cheap single-count items
+# (Ice Heal, Fresh Water, Energy Powder, Energy Root, Heal Powder,
+# Revival Herb) are dropped to make room.
+ADD_MINTS = False
+REMOVE = [("medicine", item) for item in (20, 30, 34, 35, 36, 37)] if ADD_MINTS else []
 
 WANTED = [
     ("items", ITEM_SPELL_TAG, 99),
@@ -51,7 +55,7 @@ WANTED = [
     ("medicine", ITEM_RARE_CANDY, 999),
 ] + [("medicine", item, 999) for item in VITAMINS.values()] + [
     ("medicine", ITEM_ABILITY_PATCH, 99),
-] + [("medicine", item, 99) for item in MINTS.values()]
+] + ([("medicine", item, 99) for item in MINTS.values()] if ADD_MINTS else [])
 
 
 def crc16_ccitt(data):
