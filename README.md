@@ -11,3 +11,15 @@
 
 The Medicine pocket holds only 40 slots. To change what is added or removed,
 edit `WANTED` / `REMOVE` in the script and run it again on the original save.
+
+## Freeze report (savestate `.ml1`)
+
+The frozen melonDS savestate still holds a healthy in-game save (Hall of Fame done,
+both partitions pass their checksums, bag and party in memory match the save). The game
+froze during the Molly / Entei statue event, while the Medicine pocket was completely full (40/40).
+
+- `save/Origin_HeartGold_latest_from_state.sav` – last in-game save, pulled from the savestate as-is
+- `save/Origin_HeartGold_latest_fixed.sav` – same save with 4 free Medicine slots (Potion,
+  Moomoo Milk, Lava Cookie and Old Gateau removed)
+- `tools/extract_melonds_save.py STATE.ml1 OUT.sav` – pulls the save out of a melonDS savestate
+- `tools/free_medicine_slots.py IN.sav OUT.sav` – frees the Medicine slots
