@@ -3,7 +3,7 @@
 
 A completely full Medicine pocket (40/40) is the one risky thing left over
 from the bag edit, so this drops a few cheap, easy-to-rebuy items from the
-newest save partition: Potion, Moomoo Milk, Lava Cookie and Old Gateau.
+newest save partition: Moomoo Milk, Lava Cookie and Old Gateau.
 
 Usage: free_medicine_slots.py IN.sav OUT.sav
 """
@@ -13,7 +13,7 @@ import sys
 from origin_hg_bag_edit import (FOOTER_SIZE, GENERAL_SIZE, PARTITIONS,
                                 block_info, crc16_ccitt, remove_item)
 
-CHEAP_MEDICINE = (17, 33, 42, 54)  # Potion, Moomoo Milk, Lava Cookie, Old Gateau
+CHEAP_MEDICINE = (33, 42, 54)  # Moomoo Milk, Lava Cookie, Old Gateau
 
 
 def main(src, dst):

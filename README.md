@@ -23,3 +23,12 @@ froze during the Molly / Entei statue event, while the Medicine pocket was compl
   Moomoo Milk, Lava Cookie and Old Gateau removed)
 - `tools/extract_melonds_save.py STATE.ml1 OUT.sav` – pulls the save out of a melonDS savestate
 - `tools/free_medicine_slots.py IN.sav OUT.sav` – frees the Medicine slots
+
+## Progress recovered from the savestate's live memory
+
+The savestate's RAM holds about 11 more hours of play than its in-game save (43:47 vs 32:57).
+
+- `save/Origin_HeartGold_43h47m.sav` – **newest**: live progress from the savestate (play time
+  43:47, 123 Pokémon in the PC, all checksums valid), with Moomoo Milk, Lava Cookie and Old Gateau
+  removed so the Medicine pocket has 3 free slots
+- `tools/melonds_state_to_sav.py STATE.ml1 OUT.sav` – builds a .sav from a savestate's live memory
