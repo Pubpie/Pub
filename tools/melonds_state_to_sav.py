@@ -18,6 +18,11 @@ from origin_hg_bag_edit import FOOTER_SIZE, GENERAL_SIZE, PARTITIONS, block_info
 MAIN_RAM_SIZE = 0x400000
 STORAGE_START = 0xF800  # storage block offset, both in a partition and in RAM
 STORAGE_SIZE = 0x18408
+# Player location (current map, previous map, warps, spawn point, ...). The
+# game updates it in RAM on every map change, but saves the map objects only
+# on an in-game save, so mixing a live location with stale map objects gives
+# a black screen. Keep the location from the last in-game save instead.
+LOCAL_FIELD_DATA = slice(0x1320, 0x13A8)
 TRAINER = slice(0x64, 0x78)  # trainer name + IDs, used to find the live block
 PLAY_TIME = 0x86
 
@@ -60,6 +65,9 @@ def main(src, dst):
         data_len = size - FOOTER_SIZE
         dst_off = older_base + block_start
         sav[dst_off:dst_off + data_len] = ram[live + block_start:live + block_start + data_len]
+        if block_start == 0:
+            sav[dst_off + LOCAL_FIELD_DATA.start:dst_off + LOCAL_FIELD_DATA.stop] = \
+                sav[newest_base + LOCAL_FIELD_DATA.start:newest_base + LOCAL_FIELD_DATA.stop]
         # Copy the footer layout from the newest partition, then bump the count.
         footer = dst_off + data_len
         sav[footer:footer + FOOTER_SIZE] = sav[newest_base + block_start + data_len:

@@ -30,5 +30,7 @@ The savestate's RAM holds about 11 more hours of play than its in-game save (43:
 
 - `save/Origin_HeartGold_43h47m.sav` – **newest**: live progress from the savestate (play time
   43:47, 123 Pokémon in the PC, all checksums valid), with Moomoo Milk, Lava Cookie and Old Gateau
-  removed so the Medicine pocket has 3 free slots
+  removed so the Medicine pocket has 3 free slots. The player location is taken from the last
+  in-game save (map 306), because the live location (map 325) did not match the saved map
+  objects and gave a black screen
 - `tools/melonds_state_to_sav.py STATE.ml1 OUT.sav` – builds a .sav from a savestate's live memory
