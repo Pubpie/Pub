@@ -44,7 +44,8 @@ Because that full copy still gave a black screen (the state was taken mid-event)
   flags (story progress); location and map data stay from the in-game save
   (`tools/melonds_state_to_sav.py --with-story`). System flag 0x966 is kept from the in-game
   save: the statue event clears it temporarily, and a save with it cleared gives a black screen
-  (found by testing 7 saves that each carried a different set of the 109 changed values).
-  Rare Candy set to x999 afterwards with `tools/set_item_count.py`
+  (found by testing 7 saves that each carried a different set of the 109 changed values))
 - `tools/set_item_count.py IN.sav OUT.sav POCKET ITEM_ID COUNT` – sets one item's count
   (e.g. `medicine 50 999` for Rare Candy x999)
+- `save/Origin_HeartGold_49h27m.sav` – **newest**: the player's own 49:27 save with Rare Candy
+  set to x999 (nothing else changed)
