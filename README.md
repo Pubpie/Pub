@@ -49,3 +49,14 @@ Because that full copy still gave a black screen (the state was taken mid-event)
   (e.g. `medicine 50 999` for Rare Candy x999)
 - `save/Origin_HeartGold_49h27m.sav` – **newest**: the player's own 49:27 save with Rare Candy
   set to x999 (nothing else changed)
+
+## Wailord and Relicanth
+
+- `save/Origin_HeartGold_79h44m_wailord_relicanth.sav` – the player's 79:44 save with two shiny
+  Lv100 Pokémon in PC box 8 (all IVs 31, PP Ups x3, OT PUB):
+  - Wailord – Modest, Water Veil, Choice Specs, Water Spout / Surf / Ice Beam / Thunder,
+    EVs 252 HP / 252 SpA / 6 Spe
+  - Relicanth – Adamant, Rock Head, Choice Band, Head Smash / Waterfall / Earthquake / Double-Edge,
+    EVs 252 HP / 252 Atk / 6 SpD
+- `tools/add_box_pokemon.py IN.sav OUT.sav BOX` – builds them from one of the player's own
+  Pokémon. Origin HeartGold keeps the ability ID as a u16 at 0x42 and its slot at 0x15.
