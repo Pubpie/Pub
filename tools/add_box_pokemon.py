@@ -2,13 +2,14 @@
 """Put made-to-order Pokemon into a PC box of an Origin HeartGold save.
 
 Each Pokemon is built from one of the player's own caught Pokemon (OT name,
-trainer ID, language, met data), then given its species, shiny PID with the
-chosen nature, ability, moves, held item, IVs/EVs and level. Origin
+trainer ID, language, met data), then given its species, a PID with the
+chosen nature (shiny or not), ability, moves, held item, IVs/EVs and level. Origin
 HeartGold stores the ability ID as a u16 at 0x42 and its slot (0/1) at 0x15,
 unlike vanilla HGSS.
 
-Usage: add_box_pokemon.py IN.sav OUT.sav BOX
+Usage: add_box_pokemon.py IN.sav OUT.sav BOX NAME...
   BOX is 1-based; the Pokemon go into the first empty slots of that box.
+  NAME is a key of POKEMON, e.g. Wailord Relicanth.
 """
 import random
 import struct
@@ -38,18 +39,23 @@ NATURES = ["Hardy", "Lonely", "Brave", "Adamant", "Naughty", "Bold", "Docile",
 ITEM_POKE_BALL = 4
 
 # moves: (move id, base PP); stats order HP, Atk, Def, Spe, SpA, SpD
-POKEMON = [
-    dict(name="Wailord", species=321, growth="fluctuating", gender_ratio=127,
+POKEMON = {p["name"]: p for p in [
+    dict(name="Wailord", species=321, growth="fluctuating", gender_ratio=127, shiny=True,
          nature="Modest", ability=41, ability_slot=0,  # Water Veil
          item=297,  # Choice Specs
          moves=[(323, 5), (57, 15), (58, 10), (87, 10)],  # Water Spout, Surf, Ice Beam, Thunder
          evs=[252, 0, 0, 6, 252, 0]),
-    dict(name="Relicanth", species=369, growth="slow", gender_ratio=31,
+    dict(name="Relicanth", species=369, growth="slow", gender_ratio=31, shiny=True,
          nature="Adamant", ability=69, ability_slot=1,  # Rock Head
          item=220,  # Choice Band
          moves=[(457, 5), (127, 15), (89, 10), (38, 15)],  # Head Smash, Waterfall, Earthquake, Double-Edge
          evs=[252, 252, 0, 0, 0, 6]),
-]
+    dict(name="Magcargo", species=219, growth="medium_fast", gender_ratio=127, shiny=False,
+         nature="Modest", ability=49, ability_slot=1,  # Flame Body
+         item=214,  # White Herb
+         moves=[(507, 15), (436, 15), (414, 10), (408, 20)],  # Shell Smash, Lava Plume, Earth Power, Power Gem
+         evs=[252, 0, 0, 0, 252, 6]),
+]}
 
 
 def prng(seed, n):
@@ -95,20 +101,21 @@ def encode_name(name):
     return struct.pack("<11H", *(out + [0] * (11 - len(out))))
 
 
-def shiny_pid(tid, sid, nature, ability_slot, gender_ratio, rng):
+def make_pid(tid, sid, nature, ability_slot, gender_ratio, shiny, rng):
     while True:
         lo = rng.getrandbits(16)
-        hi = tid ^ sid ^ lo ^ rng.getrandbits(3)
+        hi = tid ^ sid ^ lo ^ rng.getrandbits(3) if shiny else rng.getrandbits(16)
         pid = hi << 16 | lo
+        is_shiny = (tid ^ sid ^ hi ^ lo) < 8
         male = (pid & 0xFF) >= gender_ratio
-        if pid % 25 == nature and pid & 1 == ability_slot and male:
+        if pid % 25 == nature and pid & 1 == ability_slot and male and is_shiny == shiny:
             return pid
 
 
 def build(template, tid, sid, spec, rng):
     data = bytearray(template)
-    pid = shiny_pid(tid, sid, NATURES.index(spec["nature"]), spec["ability_slot"],
-                    spec["gender_ratio"], rng)
+    pid = make_pid(tid, sid, NATURES.index(spec["nature"]), spec["ability_slot"],
+                   spec["gender_ratio"], spec["shiny"], rng)
     struct.pack_into("<IH", data, 0, pid, 0)
     struct.pack_into("<HHHHI", data, 0x08, spec["species"], spec["item"], tid, sid,
                      EXP_AT_100[spec["growth"]])
@@ -133,8 +140,9 @@ def build(template, tid, sid, spec, rng):
     return encrypt(data), pid
 
 
-def main(src, dst, box):
+def main(src, dst, box, *names):
     box = int(box) - 1
+    specs = [POKEMON[n] for n in names]
     sav = bytearray(open(src, "rb").read())
     valid = [(n, b) for b in PARTITIONS for n, ok in [block_info(sav, b)] if ok]
     _, base = max(valid)
@@ -156,11 +164,11 @@ def main(src, dst, box):
 
     free = [i for i in range(BOX_SLOTS)
             if sav[storage + box * BOX_SIZE + i * BOX_MON_SIZE:][:8] == bytes(8)]
-    if len(free) < len(POKEMON):
+    if len(free) < len(specs):
         raise SystemExit(f"box {box + 1} has only {len(free)} free slots")
 
     rng = random.Random()
-    for spec, slot in zip(POKEMON, free):
+    for spec, slot in zip(specs, free):
         raw, pid = build(template, tid, sid, spec, rng)
         off = storage + box * BOX_SIZE + slot * BOX_MON_SIZE
         sav[off:off + BOX_MON_SIZE] = raw
@@ -172,4 +180,4 @@ def main(src, dst, box):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:])

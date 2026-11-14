@@ -58,5 +58,8 @@ Because that full copy still gave a black screen (the state was taken mid-event)
     EVs 252 HP / 252 SpA / 6 Spe
   - Relicanth – Adamant, Rock Head, Choice Band, Head Smash / Waterfall / Earthquake / Double-Edge,
     EVs 252 HP / 252 Atk / 6 SpD
-- `tools/add_box_pokemon.py IN.sav OUT.sav BOX` – builds them from one of the player's own
+- `save/Origin_HeartGold_80h55m_magcargo.sav` – the player's 80:55 save with a Lv100 Magcargo
+  (not shiny) in PC box 8: Modest, Flame Body, White Herb, Shell Smash / Lava Plume /
+  Earth Power / Power Gem, EVs 252 HP / 252 SpA / 6 SpD, all IVs 31, PP Ups x3
+- `tools/add_box_pokemon.py IN.sav OUT.sav BOX NAME...` – builds them from one of the player's own
   Pokémon. Origin HeartGold keeps the ability ID as a u16 at 0x42 and its slot at 0x15.
